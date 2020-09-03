@@ -4,11 +4,12 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.common.exceptions import ElementClickInterceptedException, NoSuchElementException
 from time import *
 import os
 import requests
 import threading
+import sys
 
 separator = "###_###"
 options = Options()
@@ -68,8 +69,11 @@ def get_images_from_chapter(link):
 
 def get_chapters_for_manga(link):
     load_page(link, 60, "chapter_table")
-    driver.find_element_by_partial_link_text('click to show').click()
-    sleep(1)
+    try:
+        driver.find_element_by_partial_link_text('click to show').click()
+        sleep(1)
+    except NoSuchElementException:
+        pass
     chapter_links = driver.find_element_by_id("chapter_table").find_elements_by_tag_name("a")
     chapters = []
     for c in reversed(chapter_links):
@@ -121,15 +125,13 @@ def download_images(name, num):
 
 def download_chapter(name, num, link):
     path = BASE_PATH + "/" + name + "/" + num
-    if os.path.exists(path+"/"+DONE_FILE):
-        print("done file exists for ", name, num)
+    if os.path.exists(path+"/"+IMAGES_FILE):
+        print("image file exists for ", name, num)
         return
-    os.mkdir(path)
+    if not os.path.exists(path):
+        os.mkdir(path)
     images = get_images_from_chapter(link)
-    save_to_file(images, path+"/images.txt")
-    download_images(name, num)
-    open(path+"/"+DONE_FILE, "w+").write("")
-
+    save_to_file(images, path+"/"+IMAGES_FILE)
 
 def download_chapters(name):
     chapters_file = BASE_PATH + "/" + name + "/" + CHAPTERS_FILE
@@ -177,11 +179,20 @@ def download_manga_images(start, end):
             download_images(n, num)
             open(path+"/"+DONE_FILE, "w+").write("")
 
-# download_manga_links(1,1)
-# download_mangas(6, 6)
-download_manga_images(6,6)
+# download_manga_links(1,147)
+# download_mangas(21, 30)
+# download_manga_images(118,118)
 
 print ("Headless Firefox Initialized")
+opt, start, end = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
+if opt == 1:
+    download_manga_links(start, end)
+elif opt == 2:
+    download_mangas(start, end)
+elif opt == 3:
+    download_manga_images(start, end)
+else:
+    pass
 
 sleep(5)
 driver.quit()
