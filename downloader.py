@@ -179,13 +179,8 @@ def download_manga_images(start, end):
             download_images(n, num)
             open(path+"/"+DONE_FILE, "w+").write("")
 
-# download_manga_links(1,147)
-# download_mangas(21, 30)
-# download_manga_images(118,118)
-
-print ("Headless Firefox Initialized")
 opt, start, end = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
-if opt == 1:
+if opt == 112:
     download_manga_links(start, end)
 elif opt == 2:
     download_mangas(start, end)
